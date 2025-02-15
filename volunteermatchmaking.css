@@ -1,0 +1,58 @@
+.volunteer-matching-container {
+    position: relative;
+    display: inline-block;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #ced4da;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.volunteer-dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.volunteer-dropdown select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.matching-events {
+    margin-top: 15px;
+}
+
+.matching-events select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.volunteer-card {
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    margin-top: 10px;
+    border: 1px solid #ced4da;
+}
+
+.match-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.match-button:hover {
+    background-color: #c82333;
+}
