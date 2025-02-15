@@ -1,8 +1,8 @@
 import React from 'react';
-import './VolunteerHistory.css'; // Import the CSS file
+import './VolunteerHistory.css'; 
 
 const VolunteerHistory = () => {
-  // Sample volunteer history data
+  
   const historyData = [
     {
       id: 1,
@@ -13,16 +13,16 @@ const VolunteerHistory = () => {
       eventDate: '2025-03-15',
       participationStatus: 'Completed'
     },
-    // Add more records as needed
+    
   ];
 
-  // Function to determine the urgency class
+  
   const getUrgencyClass = (urgency) => {
     switch (urgency) {
-      case 'High':
-        return 'urgency-high';
       case 'Medium':
         return 'urgency-medium';
+      case 'High':
+        return 'urgency-high';
       case 'Low':
         return 'urgency-low';
       default:
@@ -37,8 +37,8 @@ const VolunteerHistory = () => {
         <thead>
           <tr>
             <th>Event Name</th>
-            <th>Description</th>
             <th>Location</th>
+            <th>Description</th>
             <th>Urgency</th>
             <th>Event Date</th>
             <th>Status</th>
@@ -47,8 +47,8 @@ const VolunteerHistory = () => {
         <tbody>
           {historyData.map(entry => (
             <tr key={entry.id}>
-              <td>{entry.eventName}</td>
               <td>{entry.eventDescription}</td>
+              <td>{entry.eventName}</td>
               <td>{entry.location}</td>
               <td>
                 <span className={getUrgencyClass(entry.urgency)}>
