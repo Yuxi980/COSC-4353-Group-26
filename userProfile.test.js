@@ -11,7 +11,7 @@ jest.setTimeout(15000);
 
 // Reset the in-memory users array before each test
 beforeEach(async () => {
-  await request(server).post('/test/reset');
+  await request(server).delete('/profile'); // Clear existing profiles
 });
 
 describe('Profile Management', () => {
@@ -20,7 +20,6 @@ describe('Profile Management', () => {
     const res = await request(server)
       .post('/profile')
       .send({
-        email: 'newprofile@example.com',
         fullName: 'New User',
         address: '123 Test St',
         city: 'Test City',
@@ -30,14 +29,13 @@ describe('Profile Management', () => {
         availability: ['2025-05-10']
       });
     expect(res.statusCode).toEqual(201);
-    expect(res.body.user.email).toEqual('newprofile@example.com');
+    expect(res.body.user.fullName).toEqual('New User');
   });
 
   it('should not create a profile with missing fields', async () => {
     const res = await request(server)
       .post('/profile')
       .send({
-        email: 'badprofile@example.com',
         fullName: '',
         address: '',
         city: 'Test City',
@@ -49,63 +47,67 @@ describe('Profile Management', () => {
     expect(res.statusCode).toEqual(400);
   });
 
-  it('should get profile for a registered user', async () => {
-    await request(server)
-      .post('/register')
-      .send({
-        email: 'profileuser@example.com',
-        password: '123456',
-        role: 'volunteer'
-      });
-    const res = await request(server).get('/profile/profileuser@example.com');
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.email).toEqual('profileuser@example.com');
-  });
-
-  it('should update profile for a registered user', async () => {
-    await request(server)
-      .post('/register')
-      .send({
-        email: 'updateuser@example.com',
-        password: '123456',
-        role: 'volunteer'
-      });
-    const res = await request(server)
-      .put('/profile/updateuser@example.com')
-      .send({
-        fullName: 'Test User',
-        address: '123 Main St',
-        city: 'Test City',
-        state: 'TS',
-        zipCode: '12345',
-        skills: ['First Aid'],
-        availability: ['2025-03-15']
-      });
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.user.fullName).toEqual('Test User');
-  });
-
-  it('should delete a user profile', async () => {
-    await request(server)
-      .post('/register')
-      .send({
-        email: 'deleteuser@example.com',
-        password: '123456',
-        role: 'volunteer'
-      });
+  it('should get profile when it exists', async () => {
     await request(server)
       .post('/profile')
       .send({
-        email: 'deleteuser@example.com',
-        fullName: 'Delete User',
-        address: '456 Remove St',
-        city: 'Remove City',
-        state: 'RC',
+        fullName: 'Profile User',
+        address: '456 Example St',
+        city: 'Example City',
+        state: 'EX',
+        zipCode: '54321',
+        skills: ['Teaching'],
+        availability: ['2025-07-01']
+      });
+
+    const res = await request(server).get('/profile');
+    expect(res.statusCode).toEqual(200);
+    expect(res.body[0].fullName).toEqual('Profile User');
+  });
+
+  it('should update an existing profile', async () => {
+    await request(server)
+      .post('/profile')
+      .send({
+        fullName: 'Update User',
+        address: '789 Update St',
+        city: 'Update City',
+        state: 'UP',
         zipCode: '67890',
         skills: ['Cooking'],
         availability: ['2025-04-20']
       });
-    const res = await request(server).delete('/profile/deleteuser@example.com');
+
+    const res = await request(server)
+      .put('/profile')
+      .send({
+        fullName: 'Updated Name',
+        address: '789 Update St',
+        city: 'Update City',
+        state: 'UP',
+        zipCode: '67890',
+        skills: ['Event Planning'],
+        availability: ['2025-06-15']
+      });
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body.user.fullName).toEqual('Updated Name');
+  });
+
+  it('should delete a profile', async () => {
+    await request(server)
+      .post('/profile')
+      .send({
+        fullName: 'Delete User',
+        address: '101 Remove St',
+        city: 'Remove City',
+        state: 'RM',
+        zipCode: '99999',
+        skills: ['First Aid'],
+        availability: ['2025-08-30']
+      });
+
+    const res = await request(server).delete('/profile');
     expect(res.statusCode).toEqual(200);
     expect(res.body.message).toEqual('Profile deleted successfully');
   });
@@ -116,3 +118,4 @@ describe('Profile Management', () => {
 afterAll(() => {
   server.close();
 });
+
