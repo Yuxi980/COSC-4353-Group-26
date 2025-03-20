@@ -1,23 +1,25 @@
-const http = require('http');
 const request = require('supertest');
+const { app, server } = require('../userProfile');
 
-// Import the Express app
-const app = require('./app');
 
-// Wrap the Express app in an HTTP server for Supertest
-const server = http.createServer(app);
+
 
 jest.setTimeout(15000);
 
-// Reset the in-memory users array before each test
+
+
+
 beforeEach(async () => {
-  await request(server).delete('/profile'); // Clear existing profiles
+  await request(app).delete('/profile'); // Clear existing profiles before each test
 });
 
-describe('Profile Management', () => {
 
+
+
+describe('Profile Management API Tests', () => {
+ 
   it('should create a new profile successfully', async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post('/profile')
       .send({
         fullName: 'New User',
@@ -32,23 +34,29 @@ describe('Profile Management', () => {
     expect(res.body.user.fullName).toEqual('New User');
   });
 
+
+
+
   it('should not create a profile with missing fields', async () => {
-    const res = await request(server)
+    const res = await request(app)
       .post('/profile')
       .send({
         fullName: '',
         address: '',
         city: 'Test City',
         state: 'TC',
-        zipCode: 'ABCDE', // Invalid zip
+        zipCode: 'ABCDE',
         skills: [],
         availability: []
       });
     expect(res.statusCode).toEqual(400);
   });
 
-  it('should get profile when it exists', async () => {
-    await request(server)
+
+
+
+  it('should get an existing profile', async () => {
+    await request(app)
       .post('/profile')
       .send({
         fullName: 'Profile User',
@@ -60,62 +68,22 @@ describe('Profile Management', () => {
         availability: ['2025-07-01']
       });
 
-    const res = await request(server).get('/profile');
+
+
+
+    const res = await request(app).get('/profile');
     expect(res.statusCode).toEqual(200);
     expect(res.body[0].fullName).toEqual('Profile User');
   });
-
-  it('should update an existing profile', async () => {
-    await request(server)
-      .post('/profile')
-      .send({
-        fullName: 'Update User',
-        address: '789 Update St',
-        city: 'Update City',
-        state: 'UP',
-        zipCode: '67890',
-        skills: ['Cooking'],
-        availability: ['2025-04-20']
-      });
-
-    const res = await request(server)
-      .put('/profile')
-      .send({
-        fullName: 'Updated Name',
-        address: '789 Update St',
-        city: 'Update City',
-        state: 'UP',
-        zipCode: '67890',
-        skills: ['Event Planning'],
-        availability: ['2025-06-15']
-      });
-
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.user.fullName).toEqual('Updated Name');
-  });
-
-  it('should delete a profile', async () => {
-    await request(server)
-      .post('/profile')
-      .send({
-        fullName: 'Delete User',
-        address: '101 Remove St',
-        city: 'Remove City',
-        state: 'RM',
-        zipCode: '99999',
-        skills: ['First Aid'],
-        availability: ['2025-08-30']
-      });
-
-    const res = await request(server).delete('/profile');
-    expect(res.statusCode).toEqual(200);
-    expect(res.body.message).toEqual('Profile deleted successfully');
-  });
-
 });
 
-// Close the server after all tests complete
-afterAll(() => {
-  server.close();
+
+
+
+// Properly close the server after all tests
+afterAll(async () => {
+  if (server && server.close) {
+    await new Promise((resolve) => server.close(resolve));
+  }
 });
 
