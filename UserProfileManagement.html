@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +8,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    
+   
     <style>
         /* Set background to light gray */
         body {
@@ -26,7 +25,7 @@
             max-width: 600px;
             background: white;
             padding: 25px;
-            border-radius: 0px; 
+            border-radius: 0px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
         }
         .dropdown-menu {
@@ -56,6 +55,7 @@
 </head>
 <body>
 
+
 <div class="container">
     <h2 class="text-center mb-4">Profile </h2>
     <form id="profileForm">
@@ -65,22 +65,26 @@
             <input type="text" class="form-control" id="fullName" maxlength="50" required>
         </div>
 
+
         <!-- Address -->
         <div class="mb-3">
             <label class="form-label">Address 1</label>
             <input type="text" class="form-control" id="address1" maxlength="100" required>
         </div>
 
+
         <div class="mb-3">
             <label class="form-label">Address 2 (Optional)</label>
             <input type="text" class="form-control" id="address2" maxlength="100">
         </div>
+
 
         <!-- City -->
         <div class="mb-3">
             <label class="form-label">City</label>
             <input type="text" class="form-control" id="city" maxlength="100" required>
         </div>
+
 
         <!-- State Dropdown -->
         <div class="mb-3">
@@ -140,11 +144,13 @@
             </select>
         </div>
 
+
         <!-- Zip Code -->
         <div class="mb-3">
             <label class="form-label">Zip Code</label>
             <input type="text" class="form-control" id="zipCode" maxlength="9" pattern="[0-9]{5,9}" required>
         </div>
+
 
         <!-- Skills (Dropdown with Multiple Selection) -->
         <div class="mb-3">
@@ -161,11 +167,13 @@
             <input type="hidden" id="selectedSkills">
         </div>
 
+
         <!-- Preferences -->
         <div class="mb-3">
             <label class="form-label">Preferences</label>
             <textarea class="form-control" id="preferences"></textarea>
         </div>
+
 
         <!-- Availability (Multi-Date Picker) -->
         <div class="mb-3">
@@ -173,63 +181,96 @@
             <input type="text" class="form-control" id="availability" required>
         </div>
 
+
         <!-- Submit Button -->
         <button type="submit" class="btn btn-primary w-100">Save Profile</button>
     </form>
 </div>
 
+
 <!-- Success Message -->
 <div id="successMessage">Profile Saved!</div>
 
+
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    // Multi-Date Picker with MM/DD/YYYY format
-    flatpickr("#availability", {
-        mode: "multiple",
-        dateFormat: "m/d/Y"
-    });
-
-    // Skills Dropdown Selection
-    const skillsDropdown = document.getElementById("skillsDropdown");
-    const skillsList = document.getElementById("skillsList");
-    const selectedSkillsInput = document.getElementById("selectedSkills");
-
-    skillsList.addEventListener("click", function(event) {
-        if (event.target.tagName === "INPUT") {
-            updateSkillsDisplay();
+    document.addEventListener("DOMContentLoaded", function () {
+        // Multi-Date Picker with MM/DD/YYYY format
+        flatpickr("#availability", {
+            mode: "multiple",
+            dateFormat: "m/d/Y"
+        });
+    
+        // Skills Dropdown Selection
+        const skillsDropdown = document.getElementById("skillsDropdown");
+        const skillsList = document.getElementById("skillsList");
+        const selectedSkillsInput = document.getElementById("selectedSkills");
+    
+        skillsList.addEventListener("click", function (event) {
+            if (event.target.tagName === "INPUT") {
+                updateSkillsDisplay();
+            }
+        });
+    
+        function updateSkillsDisplay() {
+            let selectedSkills = Array.from(skillsList.querySelectorAll("input:checked")).map(input => input.value);
+            skillsDropdown.innerText = selectedSkills.length > 0 ? selectedSkills.join(", ") : "Select Skills";
+            selectedSkillsInput.value = selectedSkills.join(",");
         }
-    });
+    
+        document.getElementById("profileForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
 
-    function updateSkillsDisplay() {
-        let selectedSkills = Array.from(skillsList.querySelectorAll("input:checked")).map(input => input.value);
-        skillsDropdown.innerText = selectedSkills.length > 0 ? selectedSkills.join(", ") : "Select Skills";
-        selectedSkillsInput.value = selectedSkills.join(",");
+    let fullName = document.getElementById("fullName").value;
+    let address1 = document.getElementById("address1").value;
+    let address2 = document.getElementById("address2").value || "";
+    let city = document.getElementById("city").value;
+    let state = document.getElementById("state").value;
+    let zipCode = document.getElementById("zipCode").value;
+    let skills = document.getElementById("selectedSkills").value.split(",");
+    let availability = document.getElementById("availability").value.split(", ");
+    let preferences = document.getElementById("preferences").value;
+
+    if (!fullName || !address1 || !city || !state || !zipCode || skills.length === 0 || availability.length === 0) {
+        alert("Please fill in all required fields.");
+        return;
     }
 
-    document.getElementById("profileForm").addEventListener("submit", function(event) {
-        event.preventDefault();
+    const profileData = {
+        fullName,
+        address: `${address1} ${address2}`,
+        city,
+        state,
+        zipCode,
+        skills,
+        availability,
+        preferences
+    };
 
-        let fullName = document.getElementById("fullName").value;
-        let address1 = document.getElementById("address1").value;
-        let city = document.getElementById("city").value;
-        let state = document.getElementById("state").value;
-        let zipCode = document.getElementById("zipCode").value;
-        let skills = selectedSkillsInput.value.split(",");
-        let availability = document.getElementById("availability").value.split(", ");
+    try {
+        const response = await fetch("http://localhost:3000/profile", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(profileData)
+        });
 
-        if (!fullName || !address1 || !city || !state || !zipCode || skills.length === 0 || availability.length === 0) {
-            alert("Please fill in all required fields.");
-            return;
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Failed to create profile");
         }
 
-        console.log("Profile Data:", { fullName, address1, city, state, zipCode, skills, availability });
+        alert("Profile saved successfully!");
 
-        let successMessage = document.getElementById("successMessage");
-        successMessage.style.display = "block";
-        setTimeout(() => { successMessage.style.display = "none"; }, 3000);
-    });
+    } catch (error) {
+        console.error("Error sending profile data:", error);
+        alert("Failed to send data to the server. Check the console for more details.");
+    }
 });
-</script>
 
+    });
+    </script>
+    
 </body>
 </html>
