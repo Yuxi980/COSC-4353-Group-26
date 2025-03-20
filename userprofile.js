@@ -1,87 +1,98 @@
 const express = require('express');
+const cors = require('cors'); // Added CORS for cross-origin requests
 const app = express();
-const port = 3000;
 const path = require('path');
 
-// Middleware to parse JSON bodies
+const port = process.env.NODE_ENV === 'test' ? 3001 : 3000; // Use different port for Jest
+
+app.use(cors()); // Enable CORS to allow front-end requests
 app.use(express.json());
 
-// Serve static files from the client directory
+// Serve static files (if needed for front-end)
 app.use(express.static(path.join(__dirname, '..', 'client')));
 
-// In-memory data store for user profiles
+// In-memory storage for profiles
 let users = [];
 
-// ----- User Profile Management Module -----
+// Default route for homepage
+app.get('/', (req, res) => {
+    res.send('User Profile Management API is Running!');
+});
 
 // Create Profile
 app.post('/profile', (req, res) => {
-  const { fullName, address, city, state, zipCode, skills, availability } = req.body;
+    const { fullName, address, city, state, zipCode, skills, availability } = req.body;
 
-  // Validate required fields
-  if (!fullName || !address || !city || !state || !zipCode || !skills || !availability) {
-    return res.status(400).json({ error: 'Missing required profile fields' });
-  }
-  if (!Array.isArray(skills) || skills.length === 0) {
-    return res.status(400).json({ error: 'Skills must be a non-empty array' });
-  }
-  if (!Array.isArray(availability) || availability.length === 0) {
-    return res.status(400).json({ error: 'Availability must be a non-empty array' });
-  }
-  if (!/^[0-9]{5,9}$/.test(zipCode)) {
-    return res.status(400).json({ error: 'Invalid zip code format' });
-  }
+    if (!fullName || !address || !city || !state || !zipCode || !skills || !availability) {
+        return res.status(400).json({ error: 'Missing required profile fields' });
+    }
+    if (!Array.isArray(skills) || skills.length === 0) {
+        return res.status(400).json({ error: 'Skills must be a non-empty array' });
+    }
+    if (!Array.isArray(availability) || availability.length === 0) {
+        return res.status(400).json({ error: 'Availability must be a non-empty array' });
+    }
+    if (!/^[0-9]{5,9}$/.test(zipCode)) {
+        return res.status(400).json({ error: 'Invalid zip code format' });
+    }
 
-  // Create new user profile
-  const newUser = { fullName, address, city, state, zipCode, skills, availability };
-  users.push(newUser);
-  res.status(201).json({ message: 'Profile created successfully', user: newUser });
+    // Check if user already exists (by name)
+    const existingUser = users.find(user => user.fullName === fullName);
+    if (existingUser) {
+        return res.status(409).json({ error: 'Profile already exists with this name' });
+    }
+
+    const newUser = { fullName, address, city, state, zipCode, skills, availability };
+    users.push(newUser);
+    res.status(201).json({ message: 'Profile created successfully', user: newUser });
 });
 
-// Get Profile
+// Get All Profiles
 app.get('/profile', (req, res) => {
-  if (users.length === 0) return res.status(404).json({ error: 'No profiles found' });
-  res.json(users);
+    if (users.length === 0) return res.status(404).json({ error: 'No profiles found' });
+    res.json(users);
 });
 
 // Update Profile
 app.put('/profile', (req, res) => {
-  if (users.length === 0) return res.status(404).json({ error: 'No profiles found to update' });
+    const { fullName, address, city, state, zipCode, skills, availability } = req.body;
 
-  // Validate request body fields
-  const { fullName, address, city, state, zipCode, skills, availability } = req.body;
-  if (!fullName || !address || !city || !state || !zipCode || !skills || !availability) {
-    return res.status(400).json({ error: 'Missing required profile fields' });
-  }
-  if (!Array.isArray(skills) || skills.length === 0) {
-    return res.status(400).json({ error: 'Skills must be a non-empty array' });
-  }
-  if (!Array.isArray(availability) || availability.length === 0) {
-    return res.status(400).json({ error: 'Availability must be a non-empty array' });
-  }
-  if (!/^[0-9]{5,9}$/.test(zipCode)) {
-    return res.status(400).json({ error: 'Invalid zip code format' });
-  }
+    if (!fullName || !address || !city || !state || !zipCode || !skills || !availability) {
+        return res.status(400).json({ error: 'Missing required profile fields' });
+    }
 
-  // Update user profile
-  users[0] = { fullName, address, city, state, zipCode, skills, availability };
-  res.json({ message: 'Profile updated successfully', user: users[0] });
+    // Find user by name
+    const userIndex = users.findIndex(user => user.fullName === fullName);
+    if (userIndex === -1) return res.status(404).json({ error: 'Profile not found' });
+
+    users[userIndex] = { fullName, address, city, state, zipCode, skills, availability };
+    res.json({ message: 'Profile updated successfully', user: users[userIndex] });
 });
 
 // Delete Profile
 app.delete('/profile', (req, res) => {
-  if (users.length === 0) {
-    return res.status(404).json({ error: 'No profile found to delete' });
-  }
-  users = [];
-  res.json({ message: 'Profile deleted successfully' });
+    const { fullName } = req.body;
+
+    if (!fullName) {
+        return res.status(400).json({ error: 'Full name is required to delete a profile' });
+    }
+
+    // Find user by name and remove them
+    const userIndex = users.findIndex(user => user.fullName === fullName);
+    if (userIndex === -1) return res.status(404).json({ error: 'Profile not found' });
+
+    users.splice(userIndex, 1);
+    res.json({ message: 'Profile deleted successfully' });
 });
 
-// Start server if not in test mode
+// Only start the server if Jest is not running
+let server;
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
+    server = app.listen(port, () => {
+        console.log(`Server running at http://localhost:${port}`);
+    });
+} else {
+    server = null; // Prevent Jest from starting a second instance
 }
 
-module.exports = app;
+module.exports = { app, server };
