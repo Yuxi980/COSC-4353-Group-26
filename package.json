@@ -1,27 +1,25 @@
 {
-  "name": "loginandregister",
+  "name": "backend",
   "version": "1.0.0",
-  "main": "Backend.js",
+  "description": "user profile backend",
+  "main": "userProfile.js",
   "scripts": {
-  "start": "node Backend.js",
-  "test": "jest",
-  "test:coverage": "jest --coverage"
-    
+    "start": "node server/userProfile.js",
+    "dev": "nodemon server/userProfile.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "bcryptjs": "^3.0.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "joi": "^17.13.3",
-    "jsonwebtoken": "^9.0.2"
-  },
   "devDependencies": {
     "jest": "^29.7.0",
-    "supertest": "^7.0.0"
+    "supertest": "^6.3.4"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2",
+    "mysql2": "^3.14.0"
   }
 }
