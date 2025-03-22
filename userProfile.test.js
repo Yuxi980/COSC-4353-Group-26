@@ -1,89 +1,92 @@
 const request = require('supertest');
 const { app, server } = require('../userProfile');
+const mysql = require('mysql2');
+require('dotenv').config();
 
-
-
-
-jest.setTimeout(15000);
-
-
-
-
-beforeEach(async () => {
-  await request(app).delete('/profile'); // Clear existing profiles before each test
+// Use env vars for DB connection
+const db = mysql.createConnection({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'user_profile_db'
 });
 
+// Clean database before each test
+beforeEach(done => {
+  db.query('DELETE FROM UserProfile', done);
+});
 
+describe('User Profile API (MySQL)', () => {
 
+  it('should create a new profile', async () => {
+    const res = await request(app).post('/profile').send({
+      fullName: 'Test User',
+      address: '123 Main St',
+      city: 'Houston',
+      state: 'TX',
+      zipCode: '77001',
+      skills: ['Teaching', 'Cooking'],
+      availability: ['04/10/2025', '04/12/2025'],
+      preferences: 'Weekends only'
+    });
 
-describe('Profile Management API Tests', () => {
- 
-  it('should create a new profile successfully', async () => {
-    const res = await request(app)
-      .post('/profile')
-      .send({
-        fullName: 'New User',
-        address: '123 Test St',
-        city: 'Test City',
-        state: 'TC',
-        zipCode: '12345',
-        skills: ['Event Planning'],
-        availability: ['2025-05-10']
-      });
-    expect(res.statusCode).toEqual(201);
-    expect(res.body.user.fullName).toEqual('New User');
+    expect(res.statusCode).toBe(201);
+    expect(res.body.message).toBe('Profile created successfully');
   });
 
-
-
-
-  it('should not create a profile with missing fields', async () => {
-    const res = await request(app)
-      .post('/profile')
-      .send({
-        fullName: '',
-        address: '',
-        city: 'Test City',
-        state: 'TC',
-        zipCode: 'ABCDE',
-        skills: [],
-        availability: []
-      });
-    expect(res.statusCode).toEqual(400);
-  });
-
-
-
-
-  it('should get an existing profile', async () => {
-    await request(app)
-      .post('/profile')
-      .send({
-        fullName: 'Profile User',
-        address: '456 Example St',
-        city: 'Example City',
-        state: 'EX',
-        zipCode: '54321',
-        skills: ['Teaching'],
-        availability: ['2025-07-01']
-      });
-
-
-
+  it('should retrieve all profiles', async () => {
+    await request(app).post('/profile').send({
+      fullName: 'Another User',
+      address: '456 Sample Rd',
+      city: 'Dallas',
+      state: 'TX',
+      zipCode: '75001',
+      skills: ['Event Management'],
+      availability: ['05/01/2025'],
+      preferences: ''
+    });
 
     const res = await request(app).get('/profile');
-    expect(res.statusCode).toEqual(200);
-    expect(res.body[0].fullName).toEqual('Profile User');
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBeGreaterThan(0);
+    expect(res.body[0].fullName).toBe('Another User');
+  });
+
+  it('should fail if required fields are missing', async () => {
+    const res = await request(app).post('/profile').send({
+      fullName: '',
+      address: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      skills: [],
+      availability: [],
+      preferences: ''
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('Missing required fields');
+  });
+
+  it('should return an empty array if no profiles exist', async () => {
+    const res = await request(app).get('/profile');
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(0);
   });
 });
 
-
-
-
-// Properly close the server after all tests
-afterAll(async () => {
-  if (server && server.close) {
-    await new Promise((resolve) => server.close(resolve));
-  }
+afterAll(() => {
+  db.end();
+  server && server.close();
 });
+
+
+
+
+
+
+
+
 
