@@ -31,7 +31,7 @@ export default function VolunteerHistory() {
       eventDescription: 'Planting trees in the community park',
       location: 'Greenwood Park',
       urgency: 'Medium',
-      eventDate: '2025-04-10',
+      eventDate: '2025-08-11',
       participationStatus: 'Completed',
     },
   ];
