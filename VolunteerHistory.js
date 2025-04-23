@@ -27,11 +27,11 @@ export default function VolunteerHistory() {
   const historyData = [
     {
       id: 1,
-      eventName: 'Community Kitchen',
-      eventDescription: 'Cooking meals for the homeless',
-      location: 'Local Shelter',
-      urgency: 'High',
-      eventDate: '2025-03-15',
+      eventName: 'Tree Planting Initiative',
+      eventDescription: 'Planting trees in the community park',
+      location: 'Greenwood Park',
+      urgency: 'Medium',
+      eventDate: '2025-04-10',
       participationStatus: 'Completed',
     },
   ];
@@ -58,4 +58,5 @@ export default function VolunteerHistory() {
     </div>
   );
 }
+
 
