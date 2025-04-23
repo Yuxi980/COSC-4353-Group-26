@@ -1,8 +1,29 @@
 import React from 'react';
-import './VolunteerHistory.css'; 
+import './VolunteerHistory.css';
 
-const VolunteerHistory = () => {
-  
+function getUrgencyClass(urgency) {
+  if (urgency === 'High') return 'urgency-high';
+  if (urgency === 'Medium') return 'urgency-medium';
+  if (urgency === 'Low') return 'urgency-low';
+  return '';
+}
+
+function VolunteerRow({ entry }) {
+  return (
+    <tr key={entry.id}>
+      <td>{entry.eventName}</td>
+      <td>{entry.location}</td>
+      <td>{entry.eventDescription}</td>
+      <td>
+        <span className={getUrgencyClass(entry.urgency)}>{entry.urgency}</span>
+      </td>
+      <td>{entry.eventDate}</td>
+      <td>{entry.participationStatus}</td>
+    </tr>
+  );
+}
+
+export default function VolunteerHistory() {
   const historyData = [
     {
       id: 1,
@@ -11,24 +32,11 @@ const VolunteerHistory = () => {
       location: 'Local Shelter',
       urgency: 'High',
       eventDate: '2025-03-15',
-      participationStatus: 'Completed'
+      participationStatus: 'Completed',
     },
-    
   ];
 
-  
-  const getUrgencyClass = (urgency) => {
-    switch (urgency) {
-      case 'Medium':
-        return 'urgency-medium';
-      case 'High':
-        return 'urgency-high';
-      case 'Low':
-        return 'urgency-low';
-      default:
-        return '';
-    }
-  };
+  const tableHeaders = ['Event Name', 'Location', 'Description', 'Urgency', 'Event Date', 'Status'];
 
   return (
     <div className="volunteer-history-container">
@@ -36,33 +44,18 @@ const VolunteerHistory = () => {
       <table>
         <thead>
           <tr>
-            <th>Event Name</th>
-            <th>Location</th>
-            <th>Description</th>
-            <th>Urgency</th>
-            <th>Event Date</th>
-            <th>Status</th>
+            {tableHeaders.map((header, index) => (
+              <th key={index}>{header}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {historyData.map(entry => (
-            <tr key={entry.id}>
-              <td>{entry.eventDescription}</td>
-              <td>{entry.eventName}</td>
-              <td>{entry.location}</td>
-              <td>
-                <span className={getUrgencyClass(entry.urgency)}>
-                  {entry.urgency}
-                </span>
-              </td>
-              <td>{entry.eventDate}</td>
-              <td>{entry.participationStatus}</td>
-            </tr>
+          {historyData.map((entry) => (
+            <VolunteerRow key={entry.id} entry={entry} />
           ))}
         </tbody>
       </table>
     </div>
   );
-};
+}
 
-export default VolunteerHistory;
