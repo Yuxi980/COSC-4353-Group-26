@@ -1,4 +1,4 @@
-/* VolunteerHistory.css */
+
 .volunteer-history-container {
     position: relative;
     display: inline-block;
@@ -44,7 +44,7 @@
     color: #495057;
 }
 
-/* Optional: Add a badge-like style for urgency levels */
+
 .urgency-high {
     background-color: #dc3545;
     color: white;
