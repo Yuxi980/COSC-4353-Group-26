@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer System</title>
+</head>
+<body style="font-family: Helvetica">
+    <div>
+        <span>
+            <span>Enter Event ID:</span>
+            <input type="text" id="eventIDInput">
+        </span>
+        <button id="createReport">Generate Report</button>
+    </div>
+
+
+    <h1 id="eventName"></h1>
+    <p id="eventDesc"></p>
+    <p id="eventUrgency"></p>
+    <p id="eventDate"></p>
+    <p><strong id="eventSkillsTitle"></strong> <span id="eventSkills"></span></p>
+
+
+</body>
+</html>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+
+        document.getElementById("createReport").addEventListener("click", async function () {
+            let id = document.getElementById("eventIDInput").value;
+            const fetchEventsRes = await fetch('/api/fetch-single-event', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id})
+            });
+
+            const curEvent = await fetchEventsRes.json();
+            const eventData = curEvent.data;
+            const eventSkills = curEvent.skills;
+
+            console.log(`Name: "${eventData.name}`);
+            document.getElementById("eventName").innerHTML = eventData.name;
+            console.log(`Description: ${eventData.description}`);
+            document.getElementById("eventDesc").innerHTML = `<strong>Description:</strong> ${eventData.description}`;
+            console.log(`Urgency: ${eventData.urgency}`);
+            document.getElementById("eventUrgency").innerHTML = `<strong>Urgency:</strong> ${(eventData.urgency == "h" ? "High" : (eventData.urgency == "l" ? "Low" : "Medium"))}`;
+            console.log(`Date: ${eventData.date}`);
+            document.getElementById("eventDate").innerHTML = `<strong>Date:</strong> ${eventData.date}`;
+            console.log("====");
+            for(let i = 0; i < eventSkills.length; i++) {
+                console.log(`Skill #${i + 1}: ${eventSkills[i]["skill_name"]}`);
+                if(i == 0) {
+                    document.getElementById("eventSkills").innerHTML = "";
+                    document.getElementById("eventSkillsTitle").innerHTML = "Skills:";
+                }
+                if(i > 0)
+                    document.getElementById("eventSkills").innerHTML += ", ";
+                document.getElementById("eventSkills").innerHTML += eventSkills[i]["skill_name"];
+            }
+        });
+
+    });
+</script>

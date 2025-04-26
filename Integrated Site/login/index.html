@@ -94,7 +94,7 @@
 
         <!-- Login Form -->
         <div id="loginForm" class="form-container active">
-            <form onsubmit="loginUser(event)">
+            <form>
                 <div class="form-group">
                     <input type="email" id="loginEmail" placeholder="Email" required>
                 </div>
@@ -108,7 +108,7 @@
 
         <!-- Registration Form -->
         <div id="registerForm" class="form-container">
-            <form onsubmit="registerUser(event)">
+            <form>
                 <div class="form-group">
                     <input type="email" id="registerEmail" placeholder="Email" required>
                 </div>
@@ -144,50 +144,52 @@
         }
 
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
-    const userType = document.getElementById('userType').value;
+            e.preventDefault();
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const userType = document.getElementById('userType').value;
 
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ email, password, userType }),
-      credentials: 'include'
-    });
+            const res = await fetch('/api/register', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email, password, userType }),
+            credentials: 'include'
+            });
 
-    const data = await res.json();
-    if (res.ok) {
-      alert(data.message);
-      switchForm('login');
-    } else {
-      const errorEl = document.getElementById('registerError');
-      errorEl.textContent = data.error;
-      errorEl.style.display = 'block';
-    }
-  });
+            const data = await res.json();
+            if (res.ok) {
+            alert(data.message);
+            switchForm('login');
+            } else {
+            const errorEl = document.getElementById('registerError');
+            errorEl.textContent = data.error;
+            errorEl.style.display = 'block';
+            }
+         });
 
-  document.getElementById('loginForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
 
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ email, password }),
-      credentials: 'include'
-    });
+            const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email, password }),
+            credentials: 'include'
+            });
 
-    const data = await res.json();
-    if (res.ok) {
-      alert('Login successful! Token: ' + data.token);
-    } else {
-      const errorEl = document.getElementById('loginError');
-      errorEl.textContent = data.error;
-      errorEl.style.display = 'block';
-    }
-  });
+            const data = await res.json();
+            if (res.ok) {
+             if(data.redirect) {
+                window.location.href = data.redirect;
+             }
+            } else {
+            const errorEl = document.getElementById('loginError');
+            errorEl.textContent = data.error;
+            errorEl.style.display = 'block';
+            }
+        });
     </script>
 </body>
 </html>
